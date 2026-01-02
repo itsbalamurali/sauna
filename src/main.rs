@@ -8,7 +8,7 @@ fn main() {
     // Set up drawing units and limits
     drawing.header.version = AcadVersion::R2013;
 
-    // Create the sauna building structure
+    // Create the sauna building structure (plan view at origin)
     create_sauna_room(&mut drawing);
 
     // Create the shower area inside the sauna
@@ -22,6 +22,22 @@ fn main() {
 
     // Add labels and dimensions
     add_labels(&mut drawing);
+
+    // Create elevation views offset from plan view
+    let offset_x = 1000.0; // Offset for elevation views
+    let offset_y = 0.0;
+
+    // Front elevation (south view)
+    create_front_elevation(&mut drawing, offset_x, offset_y);
+
+    // Top/roof view
+    create_top_view(&mut drawing, offset_x, -800.0);
+
+    // Side elevation (east view)
+    create_side_elevation(&mut drawing, offset_x + 600.0, offset_y);
+
+    // Section cut through sauna
+    create_section_cut(&mut drawing, offset_x + 1200.0, offset_y);
 
     // Save the drawing
     match drawing.save_file("sauna_design.dxf") {
@@ -465,4 +481,553 @@ fn polyline_from_points(points: Vec<Point>) -> LwPolyline {
         });
     }
     polyline
+}
+
+fn create_front_elevation(drawing: &mut Drawing, offset_x: f64, offset_y: f64) {
+    // Front elevation (looking at south face)
+    let sauna_width = 366.0;
+    let sauna_height = 213.0; // 7 feet ceiling
+    let deck_height = 40.0;
+    let deck_extension = 183.0;
+
+    // Ground line
+    let ground = Line {
+        p1: Point::new(offset_x - 100.0, offset_y, 0.0),
+        p2: Point::new(offset_x + sauna_width + 100.0, offset_y, 0.0),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(ground));
+    entity.common.color = Color::from_index(8);
+    drawing.add_entity(entity);
+
+    // Deck platform
+    let deck_outline = polyline_from_points(vec![
+        Point::new(offset_x - deck_extension, offset_y, 0.0),
+        Point::new(offset_x - deck_extension, offset_y + deck_height, 0.0),
+        Point::new(
+            offset_x + sauna_width + deck_extension,
+            offset_y + deck_height,
+            0.0,
+        ),
+        Point::new(offset_x + sauna_width + deck_extension, offset_y, 0.0),
+        Point::new(offset_x - deck_extension, offset_y, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(deck_outline));
+    entity.common.color = Color::from_index(5);
+    drawing.add_entity(entity);
+
+    // Sauna exterior walls
+    let sauna_exterior = polyline_from_points(vec![
+        Point::new(offset_x, offset_y + deck_height, 0.0),
+        Point::new(offset_x, offset_y + deck_height + sauna_height, 0.0),
+        Point::new(
+            offset_x + sauna_width,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        Point::new(offset_x + sauna_width, offset_y + deck_height, 0.0),
+        Point::new(offset_x, offset_y + deck_height, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(sauna_exterior));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Door
+    let door_width = 80.0;
+    let door_height = 190.0;
+    let door_x = offset_x + sauna_width - 100.0;
+    let door_rect = polyline_from_points(vec![
+        Point::new(door_x, offset_y + deck_height, 0.0),
+        Point::new(door_x, offset_y + deck_height + door_height, 0.0),
+        Point::new(
+            door_x + door_width,
+            offset_y + deck_height + door_height,
+            0.0,
+        ),
+        Point::new(door_x + door_width, offset_y + deck_height, 0.0),
+        Point::new(door_x, offset_y + deck_height, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(door_rect));
+    entity.common.color = Color::from_index(4);
+    drawing.add_entity(entity);
+
+    // Stairs
+    let step_width = 150.0;
+    let step_x = offset_x + sauna_width / 2.0 - step_width / 2.0;
+    for i in 0..4 {
+        let step_y = offset_y + i as f64 * 10.0;
+        let step_line = Line {
+            p1: Point::new(step_x, step_y, 0.0),
+            p2: Point::new(step_x + step_width, step_y, 0.0),
+            ..Default::default()
+        };
+        let mut entity = Entity::new(EntityType::Line(step_line));
+        entity.common.color = Color::from_index(5);
+        drawing.add_entity(entity);
+    }
+
+    // Label
+    let label = Text {
+        location: Point::new(
+            offset_x + sauna_width / 2.0 - 80.0,
+            offset_y + deck_height + sauna_height + 30.0,
+            0.0,
+        ),
+        text_height: 15.0,
+        value: "FRONT ELEVATION".to_string(),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Text(label));
+    entity.common.color = Color::from_index(7);
+    drawing.add_entity(entity);
+}
+
+fn create_top_view(drawing: &mut Drawing, offset_x: f64, offset_y: f64) {
+    // Top/roof view (looking down at roof)
+    let sauna_width = 366.0;
+    let sauna_depth = 305.0;
+    let roof_overhang = 30.0;
+
+    // Roof outline with overhang
+    let roof_outline = polyline_from_points(vec![
+        Point::new(offset_x - roof_overhang, offset_y - roof_overhang, 0.0),
+        Point::new(
+            offset_x + sauna_width + roof_overhang,
+            offset_y - roof_overhang,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width + roof_overhang,
+            offset_y + sauna_depth + roof_overhang,
+            0.0,
+        ),
+        Point::new(
+            offset_x - roof_overhang,
+            offset_y + sauna_depth + roof_overhang,
+            0.0,
+        ),
+        Point::new(offset_x - roof_overhang, offset_y - roof_overhang, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(roof_outline));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Roof ridge line (center)
+    let ridge = Line {
+        p1: Point::new(offset_x - roof_overhang, offset_y + sauna_depth / 2.0, 0.0),
+        p2: Point::new(
+            offset_x + sauna_width + roof_overhang,
+            offset_y + sauna_depth / 2.0,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(ridge));
+    entity.common.color = Color::from_index(2);
+    drawing.add_entity(entity);
+
+    // Roof slopes (dashed lines showing pitch)
+    for i in 1..8 {
+        let x_pos = offset_x - roof_overhang + (sauna_width + 2.0 * roof_overhang) / 8.0 * i as f64;
+        let slope1 = Line {
+            p1: Point::new(x_pos, offset_y - roof_overhang, 0.0),
+            p2: Point::new(x_pos, offset_y + sauna_depth / 2.0, 0.0),
+            ..Default::default()
+        };
+        let mut entity = Entity::new(EntityType::Line(slope1));
+        entity.common.color = Color::from_index(8);
+        drawing.add_entity(entity);
+
+        let slope2 = Line {
+            p1: Point::new(x_pos, offset_y + sauna_depth / 2.0, 0.0),
+            p2: Point::new(x_pos, offset_y + sauna_depth + roof_overhang, 0.0),
+            ..Default::default()
+        };
+        let mut entity = Entity::new(EntityType::Line(slope2));
+        entity.common.color = Color::from_index(8);
+        drawing.add_entity(entity);
+    }
+
+    // Chimney/vent location
+    let vent = Circle {
+        center: Point::new(offset_x + sauna_width / 2.0, offset_y + 80.0, 0.0),
+        radius: 15.0,
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Circle(vent));
+    entity.common.color = Color::from_index(3);
+    drawing.add_entity(entity);
+
+    // Label
+    let label = Text {
+        location: Point::new(
+            offset_x + sauna_width / 2.0 - 60.0,
+            offset_y + sauna_depth + 60.0,
+            0.0,
+        ),
+        text_height: 15.0,
+        value: "TOP VIEW / ROOF".to_string(),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Text(label));
+    entity.common.color = Color::from_index(7);
+    drawing.add_entity(entity);
+}
+
+fn create_side_elevation(drawing: &mut Drawing, offset_x: f64, offset_y: f64) {
+    // Side elevation (looking at east face)
+    let sauna_depth = 305.0;
+    let sauna_height = 213.0;
+    let deck_height = 40.0;
+    let roof_height = 100.0; // Peak of roof
+
+    // Ground line
+    let ground = Line {
+        p1: Point::new(offset_x - 50.0, offset_y, 0.0),
+        p2: Point::new(offset_x + sauna_depth + 50.0, offset_y, 0.0),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(ground));
+    entity.common.color = Color::from_index(8);
+    drawing.add_entity(entity);
+
+    // Deck platform
+    let deck_line = Line {
+        p1: Point::new(offset_x, offset_y, 0.0),
+        p2: Point::new(offset_x + sauna_depth, offset_y + deck_height, 0.0),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(deck_line));
+    entity.common.color = Color::from_index(5);
+    drawing.add_entity(entity);
+
+    // Sauna wall
+    let wall = Line {
+        p1: Point::new(offset_x, offset_y + deck_height, 0.0),
+        p2: Point::new(offset_x, offset_y + deck_height + sauna_height, 0.0),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(wall));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    let wall2 = Line {
+        p1: Point::new(offset_x + sauna_depth, offset_y + deck_height, 0.0),
+        p2: Point::new(
+            offset_x + sauna_depth,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(wall2));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Roof (gable)
+    let roof_left = Line {
+        p1: Point::new(offset_x, offset_y + deck_height + sauna_height, 0.0),
+        p2: Point::new(
+            offset_x + sauna_depth / 2.0,
+            offset_y + deck_height + sauna_height + roof_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(roof_left));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    let roof_right = Line {
+        p1: Point::new(
+            offset_x + sauna_depth / 2.0,
+            offset_y + deck_height + sauna_height + roof_height,
+            0.0,
+        ),
+        p2: Point::new(
+            offset_x + sauna_depth,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(roof_right));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Windows
+    let window1 = polyline_from_points(vec![
+        Point::new(offset_x + 50.0, offset_y + deck_height + 100.0, 0.0),
+        Point::new(offset_x + 50.0, offset_y + deck_height + 170.0, 0.0),
+        Point::new(offset_x + 110.0, offset_y + deck_height + 170.0, 0.0),
+        Point::new(offset_x + 110.0, offset_y + deck_height + 100.0, 0.0),
+        Point::new(offset_x + 50.0, offset_y + deck_height + 100.0, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(window1));
+    entity.common.color = Color::from_index(4);
+    drawing.add_entity(entity);
+
+    // Label
+    let label = Text {
+        location: Point::new(
+            offset_x + sauna_depth / 2.0 - 70.0,
+            offset_y + deck_height + sauna_height + roof_height + 30.0,
+            0.0,
+        ),
+        text_height: 15.0,
+        value: "SIDE ELEVATION".to_string(),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Text(label));
+    entity.common.color = Color::from_index(7);
+    drawing.add_entity(entity);
+}
+
+fn create_section_cut(drawing: &mut Drawing, offset_x: f64, offset_y: f64) {
+    // Section cut through center of sauna (showing interior)
+    let sauna_width = 366.0;
+    let sauna_height = 213.0;
+    let wall_thickness = 15.0;
+    let deck_height = 40.0;
+    let roof_height = 100.0;
+
+    // Ground
+    let ground = Line {
+        p1: Point::new(offset_x - 50.0, offset_y, 0.0),
+        p2: Point::new(offset_x + sauna_width + 50.0, offset_y, 0.0),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(ground));
+    entity.common.color = Color::from_index(8);
+    drawing.add_entity(entity);
+
+    // Deck
+    let deck = polyline_from_points(vec![
+        Point::new(offset_x - 100.0, offset_y, 0.0),
+        Point::new(offset_x - 100.0, offset_y + deck_height, 0.0),
+        Point::new(offset_x + sauna_width + 100.0, offset_y + deck_height, 0.0),
+        Point::new(offset_x + sauna_width + 100.0, offset_y, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(deck));
+    entity.common.color = Color::from_index(5);
+    drawing.add_entity(entity);
+
+    // Left wall (cut through)
+    let left_wall = polyline_from_points(vec![
+        Point::new(offset_x, offset_y + deck_height, 0.0),
+        Point::new(offset_x, offset_y + deck_height + sauna_height, 0.0),
+        Point::new(
+            offset_x + wall_thickness,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        Point::new(offset_x + wall_thickness, offset_y + deck_height, 0.0),
+        Point::new(offset_x, offset_y + deck_height, 0.0),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(left_wall));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Right wall (cut through)
+    let right_wall = polyline_from_points(vec![
+        Point::new(
+            offset_x + sauna_width - wall_thickness,
+            offset_y + deck_height,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width - wall_thickness,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        Point::new(offset_x + sauna_width, offset_y + deck_height, 0.0),
+        Point::new(
+            offset_x + sauna_width - wall_thickness,
+            offset_y + deck_height,
+            0.0,
+        ),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(right_wall));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Interior benches
+    // Lower bench
+    let lower_bench = polyline_from_points(vec![
+        Point::new(
+            offset_x + wall_thickness + 10.0,
+            offset_y + deck_height + 45.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0,
+            offset_y + deck_height + 45.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0,
+            offset_y + deck_height + 50.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + wall_thickness + 10.0,
+            offset_y + deck_height + 50.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + wall_thickness + 10.0,
+            offset_y + deck_height + 45.0,
+            0.0,
+        ),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(lower_bench));
+    entity.common.color = Color::from_index(6);
+    drawing.add_entity(entity);
+
+    // Upper bench
+    let upper_bench = polyline_from_points(vec![
+        Point::new(
+            offset_x + wall_thickness + 30.0,
+            offset_y + deck_height + 90.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 - 20.0,
+            offset_y + deck_height + 90.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 - 20.0,
+            offset_y + deck_height + 95.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + wall_thickness + 30.0,
+            offset_y + deck_height + 95.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + wall_thickness + 30.0,
+            offset_y + deck_height + 90.0,
+            0.0,
+        ),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(upper_bench));
+    entity.common.color = Color::from_index(6);
+    drawing.add_entity(entity);
+
+    // Heater
+    let heater = polyline_from_points(vec![
+        Point::new(
+            offset_x + sauna_width / 2.0 + 10.0,
+            offset_y + deck_height,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 + 10.0,
+            offset_y + deck_height + 80.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 + 40.0,
+            offset_y + deck_height + 80.0,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 + 40.0,
+            offset_y + deck_height,
+            0.0,
+        ),
+        Point::new(
+            offset_x + sauna_width / 2.0 + 10.0,
+            offset_y + deck_height,
+            0.0,
+        ),
+    ]);
+    let mut entity = Entity::new(EntityType::LwPolyline(heater));
+    entity.common.color = Color::from_index(3);
+    drawing.add_entity(entity);
+
+    // Roof structure
+    let roof_left = Line {
+        p1: Point::new(offset_x, offset_y + deck_height + sauna_height, 0.0),
+        p2: Point::new(
+            offset_x + sauna_width / 2.0,
+            offset_y + deck_height + sauna_height + roof_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(roof_left));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    let roof_right = Line {
+        p1: Point::new(
+            offset_x + sauna_width / 2.0,
+            offset_y + deck_height + sauna_height + roof_height,
+            0.0,
+        ),
+        p2: Point::new(
+            offset_x + sauna_width,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(roof_right));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Interior ceiling
+    let ceiling = Line {
+        p1: Point::new(
+            offset_x + wall_thickness,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        p2: Point::new(
+            offset_x + sauna_width - wall_thickness,
+            offset_y + deck_height + sauna_height,
+            0.0,
+        ),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Line(ceiling));
+    entity.common.color = Color::from_index(1);
+    drawing.add_entity(entity);
+
+    // Section cut line indicators
+    for i in 0..5 {
+        let x_pos = offset_x - 30.0;
+        let y_start = offset_y + deck_height + i as f64 * 50.0;
+        let cut_line = Line {
+            p1: Point::new(x_pos - 10.0, y_start, 0.0),
+            p2: Point::new(x_pos, y_start, 0.0),
+            ..Default::default()
+        };
+        let mut entity = Entity::new(EntityType::Line(cut_line));
+        entity.common.color = Color::from_index(2);
+        drawing.add_entity(entity);
+    }
+
+    // Label
+    let label = Text {
+        location: Point::new(
+            offset_x + sauna_width / 2.0 - 70.0,
+            offset_y + deck_height + sauna_height + roof_height + 30.0,
+            0.0,
+        ),
+        text_height: 15.0,
+        value: "SECTION CUT".to_string(),
+        ..Default::default()
+    };
+    let mut entity = Entity::new(EntityType::Text(label));
+    entity.common.color = Color::from_index(7);
+    drawing.add_entity(entity);
 }
