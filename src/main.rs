@@ -120,19 +120,23 @@ fn create_sauna_room(drawing: &mut Drawing) {
     // Door opening (on the front wall)
     let door_width = 80.0;
     let door_x = sauna_width - 100.0;
-    let mut door = Line::default();
-    door.p1 = Point::new(door_x, sauna_depth, 0.0);
-    door.p2 = Point::new(door_x + door_width, sauna_depth, 0.0);
+    let door = Line {
+        p1: Point::new(door_x, sauna_depth, 0.0),
+        p2: Point::new(door_x + door_width, sauna_depth, 0.0),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Line(door));
     entity.common.color = Color::from_index(4); // Cyan for door
     drawing.add_entity(entity);
 
     // Door arc (showing swing)
-    let mut door_arc = Arc::default();
-    door_arc.center = Point::new(door_x, sauna_depth, 0.0);
-    door_arc.radius = door_width;
-    door_arc.start_angle = 270.0;
-    door_arc.end_angle = 360.0;
+    let door_arc = Arc {
+        center: Point::new(door_x, sauna_depth, 0.0),
+        radius: door_width,
+        start_angle: 270.0,
+        end_angle: 360.0,
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Arc(door_arc));
     entity.common.color = Color::from_index(4);
     drawing.add_entity(entity);
@@ -157,21 +161,25 @@ fn create_shower_area(drawing: &mut Drawing) {
     drawing.add_entity(entity);
 
     // Shower drain (small circle)
-    let mut drain = Circle::default();
-    drain.center = Point::new(
-        shower_x + shower_size / 2.0,
-        shower_y + shower_size / 2.0,
-        0.0,
-    );
-    drain.radius = 5.0;
+    let drain = Circle {
+        center: Point::new(
+            shower_x + shower_size / 2.0,
+            shower_y + shower_size / 2.0,
+            0.0,
+        ),
+        radius: 5.0,
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Circle(drain));
     entity.common.color = Color::from_index(4);
     drawing.add_entity(entity);
 
     // Shower head (small circle on wall)
-    let mut shower_head = Circle::default();
-    shower_head.center = Point::new(shower_x + 10.0, shower_y + shower_size - 20.0, 0.0);
-    shower_head.radius = 3.0;
+    let shower_head = Circle {
+        center: Point::new(shower_x + 10.0, shower_y + shower_size - 20.0, 0.0),
+        radius: 3.0,
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Circle(shower_head));
     entity.common.color = Color::from_index(4);
     drawing.add_entity(entity);
@@ -204,9 +212,11 @@ fn create_deck(drawing: &mut Drawing) {
     let mut y = -deck_extension + board_spacing;
 
     while y < sauna_depth + deck_extension {
-        let mut board = Line::default();
-        board.p1 = Point::new(-deck_extension, y, 0.0);
-        board.p2 = Point::new(sauna_width + deck_extension, y, 0.0);
+        let board = Line {
+            p1: Point::new(-deck_extension, y, 0.0),
+            p2: Point::new(sauna_width + deck_extension, y, 0.0),
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Line(board));
         entity.common.color = Color::from_index(8); // Dark gray for deck boards
         drawing.add_entity(entity);
@@ -219,9 +229,11 @@ fn create_deck(drawing: &mut Drawing) {
     // Front railing posts
     let mut x = -deck_extension;
     while x <= sauna_width + deck_extension {
-        let mut post = Circle::default();
-        post.center = Point::new(x, -deck_extension, 0.0);
-        post.radius = 5.0;
+        let post = Circle {
+            center: Point::new(x, -deck_extension, 0.0),
+            radius: 5.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(post));
         entity.common.color = Color::from_index(2); // Yellow for posts
         drawing.add_entity(entity);
@@ -231,9 +243,11 @@ fn create_deck(drawing: &mut Drawing) {
     // Back railing posts
     x = -deck_extension;
     while x <= sauna_width + deck_extension {
-        let mut post = Circle::default();
-        post.center = Point::new(x, sauna_depth + deck_extension, 0.0);
-        post.radius = 5.0;
+        let post = Circle {
+            center: Point::new(x, sauna_depth + deck_extension, 0.0),
+            radius: 5.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(post));
         entity.common.color = Color::from_index(2);
         drawing.add_entity(entity);
@@ -243,9 +257,11 @@ fn create_deck(drawing: &mut Drawing) {
     // Left railing posts
     let mut y = -deck_extension;
     while y <= sauna_depth + deck_extension {
-        let mut post = Circle::default();
-        post.center = Point::new(-deck_extension, y, 0.0);
-        post.radius = 5.0;
+        let post = Circle {
+            center: Point::new(-deck_extension, y, 0.0),
+            radius: 5.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(post));
         entity.common.color = Color::from_index(2);
         drawing.add_entity(entity);
@@ -255,9 +271,11 @@ fn create_deck(drawing: &mut Drawing) {
     // Right railing posts
     y = -deck_extension;
     while y <= sauna_depth + deck_extension {
-        let mut post = Circle::default();
-        post.center = Point::new(sauna_width + deck_extension, y, 0.0);
-        post.radius = 5.0;
+        let post = Circle {
+            center: Point::new(sauna_width + deck_extension, y, 0.0),
+            radius: 5.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(post));
         entity.common.color = Color::from_index(2);
         drawing.add_entity(entity);
@@ -291,17 +309,21 @@ fn create_hot_tub(drawing: &mut Drawing) {
     let hot_tub_y = 152.5; // Centered vertically with sauna
 
     // Hot tub outer circle
-    let mut hot_tub_outer = Circle::default();
-    hot_tub_outer.center = Point::new(hot_tub_x, hot_tub_y, 0.0);
-    hot_tub_outer.radius = hot_tub_radius;
+    let hot_tub_outer = Circle {
+        center: Point::new(hot_tub_x, hot_tub_y, 0.0),
+        radius: hot_tub_radius,
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Circle(hot_tub_outer));
     entity.common.color = Color::from_index(4); // Cyan for water feature
     drawing.add_entity(entity);
 
     // Hot tub inner circle (seating area)
-    let mut hot_tub_inner = Circle::default();
-    hot_tub_inner.center = Point::new(hot_tub_x, hot_tub_y, 0.0);
-    hot_tub_inner.radius = hot_tub_radius - 20.0;
+    let hot_tub_inner = Circle {
+        center: Point::new(hot_tub_x, hot_tub_y, 0.0),
+        radius: hot_tub_radius - 20.0,
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Circle(hot_tub_inner));
     entity.common.color = Color::from_index(4);
     drawing.add_entity(entity);
@@ -312,9 +334,11 @@ fn create_hot_tub(drawing: &mut Drawing) {
         let seat_x = hot_tub_x + (hot_tub_radius - 40.0) * angle.cos();
         let seat_y = hot_tub_y + (hot_tub_radius - 40.0) * angle.sin();
 
-        let mut seat = Circle::default();
-        seat.center = Point::new(seat_x, seat_y, 0.0);
-        seat.radius = 15.0;
+        let seat = Circle {
+            center: Point::new(seat_x, seat_y, 0.0),
+            radius: 15.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(seat));
         entity.common.color = Color::from_index(6); // Magenta for seats
         drawing.add_entity(entity);
@@ -326,9 +350,11 @@ fn create_hot_tub(drawing: &mut Drawing) {
         let jet_x = hot_tub_x + (hot_tub_radius - 10.0) * angle.cos();
         let jet_y = hot_tub_y + (hot_tub_radius - 10.0) * angle.sin();
 
-        let mut jet = Circle::default();
-        jet.center = Point::new(jet_x, jet_y, 0.0);
-        jet.radius = 3.0;
+        let jet = Circle {
+            center: Point::new(jet_x, jet_y, 0.0),
+            radius: 3.0,
+            ..Default::default()
+        };
         let mut entity = Entity::new(EntityType::Circle(jet));
         entity.common.color = Color::from_index(3); // Green for jets
         drawing.add_entity(entity);
@@ -360,54 +386,66 @@ fn create_hot_tub(drawing: &mut Drawing) {
 
 fn add_labels(drawing: &mut Drawing) {
     // Add text labels for different areas
-    let mut sauna_text = Text::default();
-    sauna_text.location = Point::new(183.0, 280.0, 0.0);
-    sauna_text.text_height = 20.0;
-    sauna_text.value = "SAUNA".to_string();
+    let sauna_text = Text {
+        location: Point::new(183.0, 280.0, 0.0),
+        text_height: 20.0,
+        value: "SAUNA".to_string(),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Text(sauna_text));
     entity.common.color = Color::from_index(7);
     drawing.add_entity(entity);
 
     // Label for shower
-    let mut shower_text = Text::default();
-    shower_text.location = Point::new(30.0, 170.0, 0.0);
-    shower_text.text_height = 10.0;
-    shower_text.value = "SHOWER".to_string();
+    let shower_text = Text {
+        location: Point::new(30.0, 170.0, 0.0),
+        text_height: 10.0,
+        value: "SHOWER".to_string(),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Text(shower_text));
     entity.common.color = Color::from_index(7);
     drawing.add_entity(entity);
 
     // Label for deck
-    let mut deck_text = Text::default();
-    deck_text.location = Point::new(100.0, -100.0, 0.0);
-    deck_text.text_height = 15.0;
-    deck_text.value = "DECK/TERRACE".to_string();
+    let deck_text = Text {
+        location: Point::new(100.0, -100.0, 0.0),
+        text_height: 15.0,
+        value: "DECK/TERRACE".to_string(),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Text(deck_text));
     entity.common.color = Color::from_index(7);
     drawing.add_entity(entity);
 
     // Label for hot tub
-    let mut hottub_text = Text::default();
-    hottub_text.location = Point::new(-170.0, 130.0, 0.0);
-    hottub_text.text_height = 12.0;
-    hottub_text.value = "HOT TUB".to_string();
+    let hottub_text = Text {
+        location: Point::new(-170.0, 130.0, 0.0),
+        text_height: 12.0,
+        value: "HOT TUB".to_string(),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Text(hottub_text));
     entity.common.color = Color::from_index(7);
     drawing.add_entity(entity);
 
     // Add dimension lines
     // Top dimension line (sauna width)
-    let mut dim_line_top = Line::default();
-    dim_line_top.p1 = Point::new(0.0, 330.0, 0.0);
-    dim_line_top.p2 = Point::new(366.0, 330.0, 0.0);
+    let dim_line_top = Line {
+        p1: Point::new(0.0, 330.0, 0.0),
+        p2: Point::new(366.0, 330.0, 0.0),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Line(dim_line_top));
     entity.common.color = Color::from_index(2);
     drawing.add_entity(entity);
 
     // Side dimension line (sauna depth)
-    let mut dim_line_side = Line::default();
-    dim_line_side.p1 = Point::new(390.0, 0.0, 0.0);
-    dim_line_side.p2 = Point::new(390.0, 305.0, 0.0);
+    let dim_line_side = Line {
+        p1: Point::new(390.0, 0.0, 0.0),
+        p2: Point::new(390.0, 305.0, 0.0),
+        ..Default::default()
+    };
     let mut entity = Entity::new(EntityType::Line(dim_line_side));
     entity.common.color = Color::from_index(2);
     drawing.add_entity(entity);
