@@ -37,7 +37,7 @@ fn create_sauna_room(drawing: &mut Drawing) {
     let wall_thickness = 15.0;
 
     // Outer walls of sauna
-    let mut outer_wall = polyline_from_points(vec![
+    let outer_wall = polyline_from_points(vec![
         Point::new(0.0, 0.0, 0.0),
         Point::new(sauna_width, 0.0, 0.0),
         Point::new(sauna_width, sauna_depth, 0.0),
@@ -49,7 +49,7 @@ fn create_sauna_room(drawing: &mut Drawing) {
     drawing.add_entity(entity);
 
     // Inner walls of sauna
-    let mut inner_wall = polyline_from_points(vec![
+    let inner_wall = polyline_from_points(vec![
         Point::new(wall_thickness, wall_thickness, 0.0),
         Point::new(sauna_width - wall_thickness, wall_thickness, 0.0),
         Point::new(
@@ -66,7 +66,7 @@ fn create_sauna_room(drawing: &mut Drawing) {
 
     // Sauna benches (tiered seating)
     // Lower bench
-    let mut lower_bench = polyline_from_points(vec![
+    let lower_bench = polyline_from_points(vec![
         Point::new(wall_thickness + 10.0, wall_thickness + 10.0, 0.0),
         Point::new(
             sauna_width - wall_thickness - 10.0,
@@ -86,7 +86,7 @@ fn create_sauna_room(drawing: &mut Drawing) {
     drawing.add_entity(entity);
 
     // Upper bench
-    let mut upper_bench = polyline_from_points(vec![
+    let upper_bench = polyline_from_points(vec![
         Point::new(wall_thickness + 30.0, wall_thickness + 30.0, 0.0),
         Point::new(
             sauna_width - wall_thickness - 30.0,
@@ -106,7 +106,7 @@ fn create_sauna_room(drawing: &mut Drawing) {
     drawing.add_entity(entity);
 
     // Sauna heater/stove
-    let mut heater = polyline_from_points(vec![
+    let heater = polyline_from_points(vec![
         Point::new(sauna_width / 2.0 - 25.0, wall_thickness + 100.0, 0.0),
         Point::new(sauna_width / 2.0 + 25.0, wall_thickness + 100.0, 0.0),
         Point::new(sauna_width / 2.0 + 25.0, wall_thickness + 150.0, 0.0),
@@ -145,7 +145,7 @@ fn create_shower_area(drawing: &mut Drawing) {
     let shower_y = 305.0 - 15.0 - 10.0 - shower_size;
 
     // Shower enclosure
-    let mut shower_walls = polyline_from_points(vec![
+    let shower_walls = polyline_from_points(vec![
         Point::new(shower_x, shower_y, 0.0),
         Point::new(shower_x + shower_size, shower_y, 0.0),
         Point::new(shower_x + shower_size, shower_y + shower_size, 0.0),
@@ -184,7 +184,7 @@ fn create_deck(drawing: &mut Drawing) {
     let deck_extension = 183.0;
 
     // Outer deck boundary
-    let mut deck_outer = polyline_from_points(vec![
+    let deck_outer = polyline_from_points(vec![
         Point::new(-deck_extension, -deck_extension, 0.0),
         Point::new(sauna_width + deck_extension, -deck_extension, 0.0),
         Point::new(
@@ -271,7 +271,7 @@ fn create_deck(drawing: &mut Drawing) {
 
     for i in 0..4 {
         let step_y = sauna_depth + deck_extension + i as f64 * step_depth;
-        let mut step = polyline_from_points(vec![
+        let step = polyline_from_points(vec![
             Point::new(step_x, step_y, 0.0),
             Point::new(step_x + step_width, step_y, 0.0),
             Point::new(step_x + step_width, step_y + step_depth, 0.0),
@@ -341,7 +341,7 @@ fn create_hot_tub(drawing: &mut Drawing) {
     let step_y = hot_tub_y - step_width / 2.0;
 
     for i in 0..3 {
-        let mut step = polyline_from_points(vec![
+        let step = polyline_from_points(vec![
             Point::new(step_x + i as f64 * step_depth, step_y, 0.0),
             Point::new(step_x + (i + 1) as f64 * step_depth, step_y, 0.0),
             Point::new(
